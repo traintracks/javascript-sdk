@@ -1,0 +1,44 @@
+{
+  "name": "sdk",
+  "version": "0.0.1",
+  "description": "Javascript SDK",
+  "main": "product/sdk.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "gulp test; jshint src/ test/spec.js",
+    "build": "gulp build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:mentionllc/beast.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mentionllc/beast/issues"
+  },
+  "homepage": "http://traintracks.io",
+  "devDependencies": {
+    "gulp": "^3.6.2",
+    "gulp-closure-compiler": "^0.1.2",
+    "gulp-concat": "^2.2.0",
+    "gulp-karma": "^0.0.4",
+    "gulp-rename": "^1.2.0",
+    "gulp-replace": "^0.2.0",
+    "jshint": "^2.5.10",
+    "karma": "^0.12.16",
+    "karma-jasmine": "^0.1.5",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "karma-sinon": "^1.0.4",
+    "sinon": "^1.12.1"
+  },
+  "engines": {
+    "node": "~0.10"
+  },
+  "jshintConfig": {
+    "undef": true,
+    "es3": true
+  }
+}
