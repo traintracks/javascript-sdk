@@ -19,3 +19,7 @@ Traintracks Javascript SDK
 * `endpoint: URL` _optional_ server endpoint, default is **http://api.traintracks.io/v1/events**
 * `print: Boolean` _optional_ if print your event by console.log, **false** by default
 * `dry: Boolean` _optional_ if bypass underlying requests, convenient for debugging, **false** by default
+
+### Example
+
+For an example on how to use this SDK, please see javascript/test/live-example.html
