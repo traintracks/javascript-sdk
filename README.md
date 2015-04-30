@@ -1,5 +1,5 @@
-# beast
-Traintracks SDK
+# javascript-sdk
+Traintracks Javascript SDK
 
 # Usage
 
