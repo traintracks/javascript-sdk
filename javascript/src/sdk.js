@@ -1,11 +1,10 @@
 /*jslint browser:true*/
 /*global define, module, exports, console, global, JSON, unescape */
 
-/** @param {Object} window */
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
-        define(function() {
+        define([], function() {
             return factory(root);
         });
     } else if (typeof exports === 'object') {
@@ -48,6 +47,10 @@
         var _sessionId = options.sessionId;
         /** @type {string} */
         var _device = options.device;
+        /** @type {number} */
+        var _latitude = options.latitude;
+        /** @type {number} */
+        var _longitude = options.longitude;
 
         if (_device === null || typeof _device === 'undefined') {
             _device = 'Browser: ' + window.navigator.userAgent;
@@ -108,11 +111,11 @@
             };
         };
 
-        var _warn = function() {
+        var _warn = function(message) {
             try {
-                console.warn.apply(console, arguments);
+                console.warn.apply(console, [message]);
             } catch (ex) {
-                console.log.apply(console, arguments);
+                console.log.apply(console, [message]);
             }
         };
 
@@ -136,6 +139,17 @@
                 eventType: eventType,
                 data: event
             };
+
+            if (_latitude && _longitude) {
+                var lat = parseFloat(_latitude);
+                var lon = parseFloat(_longitude);
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    data.location = {
+                        lat: lat,
+                        lon: lon
+                    };
+                }
+            }
 
             return {level: function(l) {
                 if (_print && typeof console !== "undefined" && l !== 'PAGE') {
@@ -188,7 +202,7 @@
             }};
         };
 
-        /** @expose */
+        /** @export */
         this.log = _rawLog;
 
         var _apiCall = function(token, secret, data) {
@@ -387,14 +401,15 @@
                 ZZ(date);
         }
 
-        function leftZeroFill(number, targetLength, forceSign) {
+        function leftZeroFill(number, targetLength) {
             var output = '' + Math.abs(number),
                 sign = number >= 0;
 
             while (output.length < targetLength) {
                 output = '0' + output;
             }
-            return (sign ? (forceSign ? '+' : '') : '-') + output;
+            // return (sign ? (forceSign ? '+' : '') : '-') + output;
+            return (sign ? '' : '-') + output;
         }
 
         function toInt(argumentForCoercion) {

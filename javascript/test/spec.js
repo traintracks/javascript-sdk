@@ -229,6 +229,27 @@ describe('sending messages', function () {
         expect(console.warn).toHaveBeenCalledWith("array won't be sent since event is not an object");
     });
 
+    it('has no location field by default', function(){
+        TT.log('test.event', {price: 1});
+        expect(this.getXhrJson(0)[0].location).toBeUndefined();
+    });
+
+    it('sends a full json correctly', function(){
+        TT.log('test.event', {price: 1, color: "red", user: { name: "Jeff" }, item_ids: [1, 2, 3, 4, 5]});
+        expect(this.getXhrJson(0)[0].data).toEqual({
+            price: 1,
+            color: "red",
+            user: { name: "Jeff" },
+            item_ids: [1, 2, 3, 4, 5]
+        });
+
+        expect(this.getXhrJson(0)[0].userId).toEqual('test');
+        expect(this.getXhrJson(0)[0].userName).toEqual('tester');
+        expect(this.getXhrJson(0)[0].build).toEqual('1.2');
+        expect(this.getXhrJson(0)[0].sessionId).toEqual('session-test');
+        expect(this.getXhrJson(0)[0].location).toBeUndefined();
+    });
+
     afterEach(destroy);
 });
 
@@ -297,5 +318,199 @@ describe('custom endpoint', function () {
     });
     
     afterEach(restoreXMLHttpRequests);
+    afterEach(destroy);
+});
+
+describe('sending messages with location', function () {
+    beforeEach(mockXMLHttpRequests);
+    beforeEach(addGetJson);
+    beforeEach(function() {
+        var initConfigWithLatlng = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            latitude: 34.551811,
+            longitude: 100.843506
+        };
+        TT.init(initConfigWithLatlng);
+        spyOn(console, 'warn');
+    });
+
+    describe('fails', function() {
+        it('without arguments', function() {
+            expect(TT.log).toThrow('No arguments!');
+        });
+
+        it('without event type as string', function() {
+            expect(function() {
+                TT.log(123, {});
+            }).toThrow('Event type is required and should be string');
+        });
+    });
+
+    it('logs location', function() {
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location.lat).toBe(34.551811);
+        expect(this.getXhrJson(0)[0].location.lon).toBe(100.843506);
+    });
+
+    afterEach(destroy);
+});
+
+describe('sending messages with a config of only latitude or longitude will not send location', function () {
+    beforeEach(mockXMLHttpRequests);
+    beforeEach(addGetJson);
+    beforeEach(function() {
+        spyOn(console, 'warn');
+    });
+
+    it('sending only latitude will not send location', function() {
+        var initConfigWithLatOnly = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            latitude: 34.551811
+        };
+        TT.init(initConfigWithLatOnly);
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location).toBeUndefined();
+    });
+
+    it('sending only longitude will not send location', function() {
+        var initConfigWithLngOnly = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            longitude: 100.843506
+        };
+        TT.init(initConfigWithLngOnly);
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location).toBeUndefined();
+    });
+
+    afterEach(destroy);
+});
+
+describe('sending messages with string locations is fine if they parse into actual floats', function () {
+    beforeEach(mockXMLHttpRequests);
+    beforeEach(addGetJson);
+    beforeEach(function() {
+        spyOn(console, 'warn');
+    });
+
+    it('sending a string latitude that can be parsed as a float is valid', function() {
+        var config = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            latitude: '34.551811',
+            longitude: 100.843506
+        };
+        TT.init(config);
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location.lat).toBe(34.551811);
+        expect(this.getXhrJson(0)[0].location.lon).toBe(100.843506);
+        expect(this.getXhrJson(0)[0].eventType).toBe('test.event');
+    });
+
+    it('sending a string longitude that can be parsed as a float is valid', function() {
+        var config = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            latitude: 34.551811,
+            longitude: '100.843506'
+        };
+        TT.init(config);
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location.lat).toBe(34.551811);
+        expect(this.getXhrJson(0)[0].location.lon).toBe(100.843506);
+        expect(this.getXhrJson(0)[0].eventType).toBe('test.event');
+    });
+
+    it('sending a string longitude and latitude that can be parsed as floats is valid', function() {
+        var config = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            latitude: '34.551811',
+            longitude: '100.843506'
+        };
+        TT.init(config);
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location.lat).toBe(34.551811);
+        expect(this.getXhrJson(0)[0].location.lon).toBe(100.843506);
+        expect(this.getXhrJson(0)[0].eventType).toBe('test.event');
+    });
+
+    it('sending a NaN latitude will not send the location', function() {
+        var config = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            latitude: 'this will not send the location field',
+            longitude: '100.843506'
+        };
+        TT.init(config);
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location).toBeUndefined();
+        expect(this.getXhrJson(0)[0].eventType).toBe('test.event');
+    });
+
+    it('sending a NaN longitude will not send the location', function() {
+        var config = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            latitude: 34.551811,
+            longitude: 'this will not send the location field'
+        };
+        TT.init(config);
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location).toBeUndefined();
+        expect(this.getXhrJson(0)[0].eventType).toBe('test.event');
+    });
+
+    it('sending both NaN longitude and latitude will not send the location', function() {
+        var config = {
+            token: TOKEN,
+            secret: 'test_secret',
+            userId: 'test',
+            userName: 'tester',
+            build: '1.2',
+            sessionId: 'session-test',
+            latitude: 'this will not send the location field',
+            longitude: 'this will not send the location field'
+        };
+        TT.init(config);
+        TT.log('test.event', {});
+        expect(this.getXhrJson(0)[0].location).toBeUndefined();
+        expect(this.getXhrJson(0)[0].eventType).toBe('test.event');
+    });
+
     afterEach(destroy);
 });

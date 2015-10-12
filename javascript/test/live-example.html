@@ -18,13 +18,15 @@
         sessionId: 'session-test',
 
         // Optional
+        latitude: 34.551811,
+        longitude: 100.843506,
         print: true,  // if console.log data, false by default.
         device: "Google Chrome", // navigator.userAgent by default, you can override it.
         dry: false // enable this if you want to bypass underlying requests, perfect for testing.
       });
 
       TT.log('event1', {
-        key: 'value';
+        key: 'value'
       });
 
       TT.log('event2', {
